@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1>✨ Smart To-Do List</h1>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="stats-card">
+                <div class="stat-item">
+                    <span class="stat-label">Total Tasks</span>
+                    <span class="stat-value" id="totalTasks">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Completed</span>
+                    <span class="stat-value" id="completedTasks">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pending</span>
+                    <span class="stat-value" id="pendingTasks">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Progress</span>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                        <span class="progress-text" id="progressText">0%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Add Task Form -->
+            <section class="add-task-section">
+                <div class="card">
+                    <h2>➕ Add New Task</h2>
+                    <form id="taskForm" class="task-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskTitle">Task Title *</label>
+                                <input type="text" id="taskTitle" required placeholder="Enter task title">
+                            </div>
+                            <div class="form-group">
+                                <label for="taskDate">Due Date *</label>
+                                <input type="date" id="taskDate" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskDescription">Description</label>
+                                <textarea id="taskDescription" rows="2" placeholder="Optional description"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taskCategory">Category</label>
+                                <select id="taskCategory">
+                                    <option value="Work">Work</option>
+                                    <option value="Personal">Personal</option>
+                                    <option value="Shopping">Shopping</option>
+                                    <option value="Health">Health</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="taskPriority">Priority</label>
+                                <select id="taskPriority">
+                                    <option value="Low">Low</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="High">High</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="taskRecurring">Repeat</label>
+                                <select id="taskRecurring">
+                                    <option value="none">None</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Task</button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Filters and Search -->
+            <section class="controls-section">
+                <div class="card">
+                    <div class="controls-row">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 Search tasks...">
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="pending">Pending</button>
+                            <button class="filter-btn" data-filter="completed">Completed</button>
+                            <button class="filter-btn" data-filter="today">Today</button>
+                        </div>
+                    </div>
+                    <div class="category-tabs">
+                        <button class="category-tab active" data-category="all">All Categories</button>
+                        <button class="category-tab" data-category="Work">Work</button>
+                        <button class="category-tab" data-category="Personal">Personal</button>
+                        <button class="category-tab" data-category="Shopping">Shopping</button>
+                        <button class="category-tab" data-category="Health">Health</button>
+                        <button class="category-tab" data-category="Other">Other</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar View Toggle -->
+            <section class="view-toggle">
+                <button class="view-btn active" data-view="list">📋 List View</button>
+                <button class="view-btn" data-view="calendar">📅 Calendar View</button>
+                <button class="view-btn" data-view="stats">📊 Stats View</button>
+            </section>
+
+            <!-- Calendar View -->
+            <section class="calendar-section hidden" id="calendarView">
+                <div class="card">
+                    <h2>📅 Calendar View</h2>
+                    <div class="calendar-container" id="calendarContainer"></div>
+                </div>
+            </section>
+
+            <!-- Stats Chart View -->
+            <section class="stats-chart-section hidden" id="statsChartView">
+                <div class="card">
+                    <h2>📊 Statistics</h2>
+                    <div class="charts-container">
+                        <canvas id="priorityChart"></canvas>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tasks List -->
+            <section class="tasks-section" id="tasksView">
+                <div class="tasks-header">
+                    <h2>📝 Your Tasks</h2>
+                    <div class="sort-options">
+                        <label>Sort by:</label>
+                        <select id="sortSelect">
+                            <option value="date-asc">Date (Oldest First)</option>
+                            <option value="date-desc" selected>Date (Newest First)</option>
+                            <option value="priority">Priority</option>
+                            <option value="title">Title</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="tasks-list" id="tasksList">
+                    <!-- Tasks will be dynamically inserted here -->
+                </div>
+            </section>
+
+            <!-- Team Members Section -->
+            <section class="team-section">
+                <div class="card">
+                    <h2 style="text-align: center;">👥 Project Details</h2>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr>
+                            <td style="vertical-align: top; padding-right: 20px;">
+                                <strong>Submitted to:</strong><br>
+                                Er. Manish Dwivedi<br>
+                                Associate Professor<br>
+                                Department of Computer Science and Engineering<br>
+                                ARYA College of Engineering and IT<br>
+                            </td>
+                            <td style="vertical-align: top; padding-left: 80px; padding-right: 20px; text-align: right;">
+                                <strong>Submitted by:</strong><br>
+                                <table style="border-collapse: collapse; margin-left: auto;">
+                                    <tr><td style="padding-right: 10px;">Shivam Mishra</td><td>24EARAD150</td></tr>
+                                    <tr><td style="padding-right: 10px;">Tanmay Baheti</td><td>24EARAD161</td></tr>
+                                    <tr><td style="padding-right: 10px;">Tavish Bhanawat</td><td>24EARAD163</td></tr>
+                                    <tr><td style="padding-right: 10px;">Twinkle</td><td>24EARAD165</td></tr>
+                                    <tr><td style="padding-right: 10px;">Yashraj</td><td>24EARAD183</td></tr>
+                                </table>
+                        </tr>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>✏️ Edit Task</h2>
+            <form id="editForm" class="task-form">
+                <input type="hidden" id="editTaskId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTitle">Task Title *</label>
+                        <input type="text" id="editTitle" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDate">Due Date *</label>
+                        <input type="date" id="editDate" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDescription">Description</label>
+                        <textarea id="editDescription" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory">
+                            <option value="Work">Work</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Health">Health</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPriority">Priority</label>
+                        <select id="editPriority">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRecurring">Repeat</label>
+                        <select id="editRecurring">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Task</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
